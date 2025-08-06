@@ -1,8 +1,8 @@
 // app/pools/page.tsx
-'use client'; // ✅ Required for useEffect, useState
+'use client';
 
 import { useEffect, useState } from 'react';
-import { getPools, Pool } from '@/lib/soroswap';
+import { getPools, Pool } from '@/lib/soroswap'; // ✅ Import Pool
 
 export default function PoolsPage() {
   const [pools, setPools] = useState<Pool[]>([]);
@@ -18,21 +18,21 @@ export default function PoolsPage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-gray-50 py-12">
+    <div className="min-h-screen bg-blue-900 text-white py-12">
       <div className="container mx-auto px-6">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">Liquidity Pools</h1>
-        <p className="text-gray-600 mb-8">Explore active pools on Soroswap with real-time APY and risk insights.</p>
+        <h1 className="text-3xl font-bold mb-2">Liquidity Pools</h1>
+        <p className="text-blue-100 mb-8">Explore active pools on Soroswap with real-time APY, volume, and risk insights.</p>
 
         {loading ? (
           <div className="text-center py-10">
-            <p className="text-gray-500">Loading pools...</p>
+            <p className="text-blue-200">Loading pools...</p>
           </div>
         ) : pools.length === 0 ? (
           <div className="text-center py-10">
-            <p className="text-gray-500">No pools available at the moment.</p>
+            <p className="text-blue-200">No pools available at the moment.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow-sm border overflow-hidden">
+          <div className="bg-white text-gray-900 rounded-xl shadow-lg border border-gray-200 overflow-hidden">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">
                 <tr>

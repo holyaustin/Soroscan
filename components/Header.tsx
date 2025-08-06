@@ -1,3 +1,4 @@
+// components/Header.tsx
 'use client';
 
 import { useState } from 'react';
@@ -7,20 +8,22 @@ import WalletButton from './WalletButton';
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Dummy handlers — passed down from page
-  const handleConnect = (pk: string) => {};
+  // Dummy handlers — passed from page
+  const handleConnect = (pk: string, network: string) => {};
   const handleDisconnect = () => {};
 
   return (
     <header className="bg-white shadow-sm border-b">
       <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-        <div className="flex items-center space-x-2">
+        {/* Logo as Link to Home */}
+        <Link href="/" className="flex items-center space-x-2">
           <div className="w-9 h-9 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold text-lg">S</span>
           </div>
           <h1 className="text-xl font-bold text-gray-900">Soroscan</h1>
-        </div>
+        </Link>
 
+        {/* Desktop Nav */}
         <nav className="hidden md:flex items-center space-x-8">
           <Link href="/dashboard" className="text-gray-700 hover:text-indigo-600 font-medium">
             Dashboard
@@ -33,16 +36,20 @@ export default function Header() {
           </Link>
         </nav>
 
+        {/* Wallet Button */}
         <WalletButton onConnect={handleConnect} onDisconnect={handleDisconnect} />
 
+        {/* Mobile Menu Button */}
         <button
           className="md:hidden text-gray-700"
           onClick={() => setIsMenuOpen(!isMenuOpen)}
+          aria-label="Toggle menu"
         >
           ☰
         </button>
       </div>
 
+      {/* Mobile Menu */}
       {isMenuOpen && (
         <nav className="md:hidden bg-white border-t px-4 py-2 space-y-2">
           <Link href="/dashboard" className="block text-gray-700">Dashboard</Link>

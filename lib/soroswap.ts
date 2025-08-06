@@ -1,3 +1,4 @@
+// lib/soroswap.ts
 const API_URL = process.env.NEXT_PUBLIC_SOROSWAP_API_URL;
 const API_KEY = process.env.NEXT_PUBLIC_SOROSWAP_API_KEY;
 
@@ -16,21 +17,31 @@ export const getPools = async (): Promise<Pool[]> => {
     if (!API_URL || !API_KEY) throw new Error('API config missing');
 
     const res = await fetch(`${API_URL}/pools`, {
+      method: 'GET',
       headers: {
         'Authorization': `Bearer ${API_KEY}`,
+        'Content-Type': 'application/json',
       },
     });
 
-    if (!res.ok) throw new Error('Failed to fetch pools');
+    if (!res.ok) {
+      const err = await res.text();
+      console.warn('API error:', err);
+      throw new Error(`HTTP ${res.status}`);
+    }
 
     const data = await res.json();
-    return data.pools || [];
+    if (!data.pools) throw new Error('Invalid response format');
+
+    console.log('✅ Fetched real pools:', data.pools.length);
+    return data.pools;
   } catch (err) {
-    console.warn('API failed, using mock', err);
+    console.warn('❌ API failed. Using mock data for demo only.', err);
     return getMockPools();
   }
 };
 
+// Mock only as fallback
 const getMockPools = (): Pool[] => [
   {
     id: '1',
@@ -40,14 +51,5 @@ const getMockPools = (): Pool[] => [
     totalValueLockedUSD: '1200000',
     volumeUSD: '450000',
     apy: '18.4',
-  },
-  {
-    id: '2',
-    token0: { symbol: 'BTC', name: 'Bitcoin' },
-    token1: { symbol: 'USDT', name: 'Tether' },
-    feeTier: 5000,
-    totalValueLockedUSD: '2100000',
-    volumeUSD: '620000',
-    apy: '14.8',
   },
 ];
