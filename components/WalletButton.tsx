@@ -76,7 +76,7 @@ export default function WalletButton({ onConnect, onDisconnect }: WalletButtonPr
   // If connected, show address + network + disconnect
   if (publicKey && network) {
     return (
-      <div className="flex items-center space-x-3 bg-white bg-opacity-90 backdrop-blur-sm px-4 py-2 rounded-lg shadow border">
+      <div className="flex items-center space-x-3 bg-blue-400 bg-opacity-90 backdrop-blur-sm px-4 py-2 rounded-lg shadow border">
         {/* Network Indicator */}
         <div
           className={`w-2 h-2 rounded-full ${
@@ -86,7 +86,7 @@ export default function WalletButton({ onConnect, onDisconnect }: WalletButtonPr
         ></div>
 
         {/* Wallet Info */}
-        <div className="text-sm font-mono text-gray-800 font-bold">
+        <div className="text-sm font-mono text-gray-800 font-bold ">
           <div>{truncate(publicKey)}</div>
           <div className="text-gray-700">{network === 'PUBLIC' ? 'Mainnet' : network}</div>
         </div>
