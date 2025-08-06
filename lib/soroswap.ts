@@ -1,55 +1,108 @@
 // lib/soroswap.ts
-const API_URL = process.env.NEXT_PUBLIC_SOROSWAP_API_URL;
-const API_KEY = process.env.NEXT_PUBLIC_SOROSWAP_API_KEY;
+export type Asset = {
+  asset_code: string;
+  asset_issuer: string;
+  display_code: string;
+  image: string;
+  name: string;
+};
 
 export type Pool = {
   id: string;
-  token0: { symbol: string; name: string };
-  token1: { symbol: string; name: string };
+  token0: Asset;
+  token1: Asset;
   feeTier: number;
+  sqrtPriceX96: string;
+  liquidity: string;
+  tick: number;
   totalValueLockedUSD: string;
   volumeUSD: string;
   apy: string;
+  txCount: number;
+  token0Price: string;
+  token1Price: string;
 };
 
+export type Quote = {
+  amountIn: string;
+  amountOut: string;
+  priceImpact: string;
+  route: Array<{
+    poolId: string;
+    tokenIn: string;
+    tokenOut: string;
+  }>;
+};
+
+// Fetch all pools
 export const getPools = async (): Promise<Pool[]> => {
   try {
-    if (!API_URL || !API_KEY) throw new Error('API config missing');
-
-    const res = await fetch(`${API_URL}/pools`, {
+    const res = await fetch('https://api.soroswap.finance/pools', {
       method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${API_KEY}`,
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
+      next: { revalidate: 60 }, // Revalidate every 60s
     });
 
-    if (!res.ok) {
-      const err = await res.text();
-      console.warn('API error:', err);
-      throw new Error(`HTTP ${res.status}`);
-    }
-
+    if (!res.ok) throw new Error('Failed to fetch pools');
     const data = await res.json();
-    if (!data.pools) throw new Error('Invalid response format');
-
-    console.log('✅ Fetched real pools:', data.pools.length);
-    return data.pools;
+    return data.pools || [];
   } catch (err) {
-    console.warn('❌ API failed. Using mock data for demo only.', err);
-    return getMockPools();
+    console.error('API Error:', err);
+    return [];
   }
 };
 
-// Mock only as fallback
-const getMockPools = (): Pool[] => [
-  {
-    id: '1',
-    token0: { symbol: 'ETH', name: 'Ethereum' },
-    token1: { symbol: 'USDC', name: 'USD Coin' },
-    feeTier: 3000,
-    totalValueLockedUSD: '1200000',
-    volumeUSD: '450000',
-    apy: '18.4',
-  },
-];
+// Fetch single pool by ID
+export const getPoolById = async (id: string): Promise<Pool | null> => {
+  try {
+    const res = await fetch(`https://api.soroswap.finance/pools/${id}`, {
+      next: { revalidate: 30 },
+    });
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+// Get quote for swap
+export const getQuote = async (
+  tokenIn: string,
+  tokenOut: string,
+  amountIn: string
+): Promise<Quote | null> => {
+  try {
+    const res = await fetch(
+      `https://api.soroswap.finance/quote?tokenIn=${tokenIn}&tokenOut=${tokenOut}&amountIn=${amountIn}`,
+      { next: { revalidate: 10 } }
+    );
+    if (!res.ok) return null;
+    return await res.json();
+  } catch {
+    return null;
+  }
+};
+
+// Fetch asset list
+export const getAssetList = async (): Promise<Asset[]> => {
+  try {
+    const res = await fetch('https://api.soroswap.finance/assetlist', {
+      next: { revalidate: 300 },
+    });
+    const data = await res.json();
+    return data.assets || [];
+  } catch {
+    return [];
+  }
+};
+
+// Get price
+export const getPrice = async (token: string): Promise<number | null> => {
+  try {
+    const res = await fetch(`https://api.soroswap.finance/price?token=${token}`);
+    const data = await res.json();
+    return parseFloat(data.price);
+  } catch {
+    return null;
+  }
+};

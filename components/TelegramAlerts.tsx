@@ -2,7 +2,6 @@
 'use client';
 
 import { useEffect } from 'react';
-import { Pool } from '@/lib/soroswap';
 import { sendTelegramAlert } from '@/lib/telegram';
 
 // Define LP Position type

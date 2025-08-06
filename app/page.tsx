@@ -119,7 +119,7 @@ export default function Home() {
             <div className="bg-white p-10 rounded-2xl shadow-md border max-w-2xl mx-auto">
               <h2 className="text-3xl font-bold text-gray-900 mb-4">Welcome, {publicKey.slice(0, 6)}...{publicKey.slice(-6)}</h2>
               <p className="text-gray-600 mb-6">
-                You're now connected to Soroscan. Explore your liquidity positions, fees, and risk insights.
+                You&apos;re now connected to Soroscan. Explore your liquidity positions, fees, and risk insights.
               </p>
               <div className="space-y-4 text-left max-w-md mx-auto">
                 <div className="flex justify-between">

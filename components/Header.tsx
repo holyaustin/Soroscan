@@ -9,7 +9,7 @@ export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // Dummy handlers — passed from page
-  const handleConnect = (pk: string, network: string) => {};
+  const handleConnect = (_pk: string, _network: string) => {};
   const handleDisconnect = () => {};
 
   return (

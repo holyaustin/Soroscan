@@ -3,7 +3,7 @@ import { Pool } from './soroswap';
 
 export type RiskScore = {
   poolId: string;
-  riskScore: number; // 0–100
+  riskScore: number;
   volatility: number;
   ilRisk: number;
   apy: number;
@@ -13,18 +13,17 @@ export type RiskScore = {
 export const calculateRisk = (pool: Pool): RiskScore => {
   const apy = parseFloat(pool.apy);
   const tvl = parseFloat(pool.totalValueLockedUSD);
-  const volume = parseFloat(pool.volumeUSD);
+  const volume = parseFloat(pool.volumeUSD); // ✅ Now used
 
-  // 1. Volatility Proxy: Low TVL + High APY = High Risk
-  const volatility = apy > 20 && tvl < 1_000_000 ? 85 : apy > 15 && tvl < 2_000_000 ? 65 : 30;
+  // 1. Volatility: High APY + Low TVL + Low Volume = High Risk
+  const volatility = apy > 20 && tvl < 1_000_000 && volume < 100_000 ? 90 : apy > 15 ? 65 : 30;
 
-  // 2. Impermanent Loss Risk: High fee tier = more stable
+  // 2. IL Risk: Low fee tier = higher impermanent loss
   const ilRisk = pool.feeTier < 500 ? 90 : pool.feeTier < 3000 ? 60 : 30;
 
   // 3. Safety Rating
-  let safetyRating: 'Low' | 'Medium' | 'High' = 'High';
   const riskScore = Math.round((volatility * 0.6) + (ilRisk * 0.4));
-
+  let safetyRating: 'Low' | 'Medium' | 'High' = 'High';
   if (riskScore > 70) safetyRating = 'Low';
   else if (riskScore > 40) safetyRating = 'Medium';
 
@@ -38,7 +37,6 @@ export const calculateRisk = (pool: Pool): RiskScore => {
   };
 };
 
-// For multiple pools
 export const getRiskScores = (pools: Pool[]): RiskScore[] => {
   return pools.map(calculateRisk);
 };
