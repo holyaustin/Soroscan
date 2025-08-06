@@ -1,6 +1,7 @@
 // app/layout.tsx
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
+import './globals.css'; // ✅ MUST be present
 
 export const metadata = {
   title: 'Soroscan – Smart LP Assistant for Soroswap & DeFindex',

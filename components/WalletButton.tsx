@@ -1,7 +1,11 @@
-// components/WalletButton.tsx
 'use client';
 
 import { useState, useEffect } from 'react';
+import {
+  isConnected,
+  requestAccess,
+  getAddress,
+} from '@stellar/freighter-api';
 
 type WalletButtonProps = {
   onConnect: (publicKey: string) => void;
@@ -9,35 +13,54 @@ type WalletButtonProps = {
 };
 
 export default function WalletButton({ onConnect, onDisconnect }: WalletButtonProps) {
-  const [isInstalled, setIsInstalled] = useState<boolean | null>(null);
   const [loading, setLoading] = useState(false);
   const [publicKey, setPublicKey] = useState<string | null>(null);
 
+  // Check if already connected on mount
   useEffect(() => {
-    const checkInstallation = () => {
-      setTimeout(() => {
-        setIsInstalled(typeof window.freighterApi !== 'undefined');
-      }, 300);
+    const checkConnection = async () => {
+      try {
+        const addressObj = await getAddress(); // Lightweight check
+        if (addressObj.address) {
+          setPublicKey(addressObj.address);
+          onConnect(addressObj.address);
+        }
+      } catch (err) {
+        console.log('Not connected yet');
+      }
     };
-    checkInstallation();
-  }, []);
-
-  const truncate = (addr: string) => `${addr.slice(0, 3)}...${addr.slice(-3)}`;
+    checkConnection();
+  }, [onConnect]);
 
   const connect = async () => {
     setLoading(true);
     try {
-      if (typeof window.freighterApi === 'undefined') {
-        setIsInstalled(false);
+      // Step 1: Check if Freighter is installed
+      const isAppConnected = await isConnected();
+      if (!isAppConnected.isConnected) {
+        alert('Freighter not detected. Please install: https://www.freighter.app');
+        setLoading(false);
         return;
       }
 
-      const userData = await window.freighterApi.getUserInfo();
-      setPublicKey(userData.publicKey);
-      onConnect(userData.publicKey);
-    } catch (err) {
-      console.error(err);
-      alert('Failed to connect');
+      // Step 2: Request access (will prompt user if not allowed)
+      const accessObj = await requestAccess();
+      if (accessObj.error) {
+        throw new Error(accessObj.error);
+      }
+
+      const publicKey = accessObj.address;
+      setPublicKey(publicKey);
+      onConnect(publicKey);
+    } catch (err: unknown) {
+      console.error('Connection failed:', err);
+      alert(
+        typeof err === 'string'
+          ? err
+          : err instanceof Error
+          ? err.message
+          : 'Failed to connect to Freighter'
+      );
     } finally {
       setLoading(false);
     }
@@ -48,18 +71,18 @@ export default function WalletButton({ onConnect, onDisconnect }: WalletButtonPr
     onDisconnect();
   };
 
-  const handleInstall = () => {
-    window.open('https://www.freighter.app', '_blank');
-  };
+  const truncate = (addr: string) => `${addr.slice(0, 3)}...${addr.slice(-3)}`;
 
+  // If connected, show address
   if (publicKey) {
     return (
-      <div className="flex items-center space-x-2 bg-white bg-opacity-90 backdrop-blur-sm px-4 py-2 rounded-lg shadow-md">
+      <div className="flex items-center space-x-2 bg-white bg-opacity-90 px-4 py-2 rounded-lg shadow">
         <div className="w-2 h-2 bg-green-500 rounded-full"></div>
         <span className="text-sm font-mono text-gray-800">{truncate(publicKey)}</span>
         <button
           onClick={disconnect}
-          className="ml-2 text-xs text-red-500 hover:text-red-700 font-bold"
+          className="ml-2 text-xs text-red-500 font-bold hover:text-red-700"
+          aria-label="Disconnect wallet"
         >
           ✕
         </button>
@@ -67,29 +90,14 @@ export default function WalletButton({ onConnect, onDisconnect }: WalletButtonPr
     );
   }
 
+  // Always show "Connect Wallet"
   return (
-    <div className="space-y-2">
-      <button
-        onClick={isInstalled === false ? handleInstall : connect}
-        disabled={loading}
-        className={`w-full md:w-auto px-6 py-3 rounded-lg font-medium text-white transition
-          ${loading
-            ? 'bg-indigo-400 cursor-not-allowed'
-            : isInstalled === false
-            ? 'bg-gray-600 hover:bg-gray-700'
-            : 'bg-indigo-600 hover:bg-indigo-700'
-          }`}
-      >
-        {loading
-          ? 'Connecting...'
-          : isInstalled === false
-          ? 'Install Freighter'
-          : 'Connect Wallet'}
-      </button>
-
-      {isInstalled === false && (
-        <p className="text-xs text-gray-500 text-center">Install to get started</p>
-      )}
-    </div>
+    <button
+      onClick={connect}
+      disabled={loading}
+      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-80 text-white text-sm font-medium rounded-lg transition"
+    >
+      {loading ? 'Connecting...' : 'Connect Wallet'}
+    </button>
   );
 }
