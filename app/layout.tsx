@@ -1,24 +1,19 @@
 // app/layout.tsx
-import Header from '@/components/Header';
-import Footer from '@/components/Footer';
-import './globals.css'; // ✅ MUST be present
+// This file must be a Server Component (no "use client")
+import './globals.css';
+
+import LayoutClient from './layout-client';
 
 export const metadata = {
-  title: 'Soroscan – Smart LP Assistant for Soroswap & DeFindex',
-  description: 'Track, optimize, and secure your liquidity positions with real-time risk insights and alerts.',
+  title: 'Soroscan – LP Intelligence',
+  description: 'Soroswap + DeFindex analytics dashboard',
 };
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-gray-50 text-gray-900 font-sans min-h-screen flex flex-col">
-        <Header />
-        <main className="flex-grow">{children}</main>
-        <Footer />
+      <body>
+        <LayoutClient>{children}</LayoutClient>
       </body>
     </html>
   );

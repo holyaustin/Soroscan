@@ -101,12 +101,16 @@ function RiskBadge({ score }: { score: number }) {
 // Suggestion Component (Fixed)
 // ------------------------------
 function Suggestion({ risk, pool }: { risk: number; pool: LPPosition['pool'] }) {
-  if (risk > 70) {
+  const isStable = ['USDC', 'USDT', 'DAI'].includes(pool.token0.symbol) && 
+                   ['USDC', 'USDT', 'DAI'].includes(pool.token1.symbol);
+
+  if (risk > 70 && !isStable) {
     return (
       <button className="text-sm text-red-600 hover:underline font-medium">
         Rebalance to USDC-USDT
       </button>
     );
   }
+
   return <span className="text-sm text-green-600">Hold — low risk</span>;
 }
